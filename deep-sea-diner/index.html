@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>《深海食堂》序章 · 可玩版</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:#0b1730;color:#eaf2ff;overflow:hidden}
+  #game{position:relative;width:100%;height:100%;min-height:560px;overflow:hidden;
+    background:radial-gradient(900px 600px at 70% 20%,#16306e,#0a1226 70%)}
+  #bg{position:absolute;inset:0;background:
+    radial-gradient(500px 380px at 20% 80%,rgba(61,219,185,.18),transparent 70%),
+    radial-gradient(600px 420px at 90% 30%,rgba(63,123,246,.28),transparent 72%)}
+  #sparkle{position:absolute;inset:0;opacity:.5;background-image:radial-gradient(#9ad8f5 1.5px,transparent 1.5px);background-size:48px 48px;
+    mask-image:radial-gradient(700px 500px at 60% 40%,#000 20%,transparent 80%)}
+  #girl{position:absolute;right:6%;bottom:120px;width:min(360px,38vw);filter:drop-shadow(0 24px 40px rgba(0,0,0,.45))}
+  #girl img{width:100%;height:auto;display:block}
+  #girl.talk{animation:bob 2.4s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  #head{position:absolute;left:6%;top:6%;font-size:15px;letter-spacing:.28em;color:#7fd8f7}
+  #hud{position:absolute;right:6%;top:6%;display:flex;align-items:center;gap:12px;font-size:15px;color:#bfe6ff}
+  #bar{width:160px;height:12px;border-radius:8px;background:rgba(255,255,255,.14);overflow:hidden}
+  #bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#3ddbb9,#7fd8f7);transition:width .35s}
+  #box{position:absolute;left:5%;right:5%;bottom:5%;min-height:200px;background:rgba(6,16,36,.92);
+    border:2px solid rgba(127,216,247,.35);border-radius:20px;padding:24px 28px;box-shadow:0 30px 70px rgba(0,0,0,.5)}
+  #who{position:absolute;top:-18px;left:28px;background:#16306e;border:2px solid #7fd8f7;border-radius:999px;
+    padding:4px 16px;font-size:15px;font-weight:700;color:#eaf2ff}
+  #say{font-size:22px;line-height:1.7;min-height:76px;white-space:pre-wrap}
+  #choices{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px}
+  button{font:inherit;font-size:18px;padding:12px 22px;border-radius:14px;border:2px solid rgba(127,216,247,.5);
+    background:rgba(22,48,110,.7);color:#eaf2ff;cursor:pointer;transition:.15s}
+  button:hover{background:#1d3f8f;border-color:#7fd8f7;transform:translateY(-1px)}
+  #tip{position:absolute;right:6%;bottom:calc(5% + 210px);font-size:14px;color:#8fb6d8}
+  #title{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+    background:rgba(6,16,36,.86);z-index:5;text-align:center}
+  #title h1{font-size:56px;letter-spacing:.06em}
+  #title p{color:#9fc6e8;font-size:17px;line-height:1.8}
+  #title small{color:#6f93b5}
+  .hide{display:none!important}
+</style>
+</head>
+<body>
+<div id="game">
+  <div id="bg"></div><div id="sparkle"></div>
+  <div id="head">《深海食堂》序章</div>
+  <div id="hud">好感度 <div id="bar"><i></i></div><span id="score">0</span></div>
+  <div id="girl"><img src="whale-girl.png" alt="鲸鱼娘"></div>
+  <div id="box">
+    <div id="who">鲸鱼娘</div>
+    <div id="say"></div>
+    <div id="choices"></div>
+  </div>
+  <div id="tip">点选项推进 · 好感度 ≥ 60 解锁隐藏结局（每幕最多 +20）</div>
+
+  <div id="title">
+    <h1>深海食堂</h1>
+    <p>策划：老策 · 台词：老策 · 立绘：阿美 · 好感度：数数<br>WorkStream 虚拟员工组出品</p>
+    <button id="start">开门营业</button>
+    <small>三幕 · 六个选项 · 一局三分钟</small>
+  </div>
+</div>
+
+<script>
+const SCRIPT = {
+  act1: {
+    who: "鲸鱼娘",
+    say: "欢迎光临……啊，是第一位客人！",
+    next: "act1b",
+  },
+  act1b: {
+    who: "客人",
+    say: "你们这儿，有咖啡吗？",
+    choices: [
+      { text: "咖啡没有，token 管够。", add: 20, next: "act2" },
+      { text: "有，给你一杯。", add: -20, next: "act2" },
+      { text: "……我们这是食堂。", add: 0, next: "act2" },
+    ],
+  },
+  act2: {
+    who: "客人",
+    say: "那……来一份「随便」。",
+    next: "act2b",
+  },
+  act2b: {
+    who: "鲸鱼娘",
+    say: "好的，一份「随便」，稍等三秒。",
+    choices: [
+      { text: "等三秒。", add: 20, next: "act3" },
+      { text: "先走了。", add: -20, next: "act3" },
+      { text: "偷偷看后厨。", add: 10, next: "act3" },
+    ],
+  },
+  act3: {
+    who: "鲸鱼娘",
+    say: "今天也辛苦啦。\n明天……你还会来吗？",
+    choices: [
+      { text: "会。", add: 20, next: "ending" },
+      { text: "不说话。", add: 0, next: "ending" },
+      { text: "看情况。", add: -10, next: "ending" },
+    ],
+  },
+  ending: {
+    who: "鲸鱼娘",
+    say: "",
+  },
+};
+
+let score = 0;
+let current = "act1";
+const $ = (id) => document.getElementById(id);
+
+function updateHud() {
+  $("score").textContent = String(score);
+  $("bar").firstElementChild.style.width = Math.max(0, Math.min(100, score)) + "%";
+}
+
+function typeSay(text) {
+  const node = $("say");
+  node.textContent = "";
+  let i = 0;
+  const timer = setInterval(() => {
+    node.textContent = text.slice(0, ++i);
+    if (i >= text.length) clearInterval(timer);
+  }, 28);
+}
+
+function showEnding() {
+  const hidden = score >= 60;
+  $("who").textContent = hidden ? "鲸鱼娘 · 隐藏结局" : "鲸鱼娘";
+  typeSay(hidden
+    ? "那说好了，明天见。\n……啊，你怎么知道我偷偷在等你。\n\n〔隐藏结局 · 好感度 " + score + "〕"
+    : "好，明天见。\n（灯灭了，食堂的门轻轻关上。）\n\n〔普通结局 · 好感度 " + score + "，还差 " + (60 - score) + " 点解锁隐藏结局〕");
+  $("choices").innerHTML = "";
+  const again = document.createElement("button");
+  again.textContent = "再开一次店";
+  again.onclick = () => { score = 0; current = "act1"; updateHud(); render("act1"); };
+  $("choices").appendChild(again);
+}
+
+function render(key) {
+  const node = SCRIPT[key];
+  if (!node) return;
+  $("who").textContent = node.who;
+  $("choices").innerHTML = "";
+  if (key === "ending") { showEnding(); return; }
+  typeSay(node.say);
+  const advance = () => {
+    if (node.next) render(node.next);
+  };
+  if (node.choices) {
+    const buttons = node.choices.map((choice) => {
+      const button = document.createElement("button");
+      button.textContent = choice.text;
+      button.onclick = () => {
+        score += choice.add;
+        updateHud();
+        $("girl").classList.remove("talk");
+        void $("girl").offsetWidth;
+        $("girl").classList.add("talk");
+        render(choice.next);
+      };
+      return button;
+    });
+    // 打字结束后再出选项，避免点太快
+    setTimeout(() => buttons.forEach((button) => $("choices").appendChild(button)), Math.min(1400, node.say.length * 28 + 200));
+  } else {
+    $("choices").innerHTML = "";
+    const button = document.createElement("button");
+    button.textContent = "继续";
+    button.onclick = advance;
+    setTimeout(() => $("choices").appendChild(button), Math.min(1400, node.say.length * 28 + 200));
+  }
+}
+
+$("start").onclick = () => {
+  $("title").classList.add("hide");
+  $("girl").classList.add("talk");
+  updateHud();
+  render("act1");
+};
+updateHud();
+</script>
+</body>
+</html>
